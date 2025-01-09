@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TODO App</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <div id="app">
+        <div class="todo-container">
+            <div class="left-panel">
+                <h2>Tasks</h2>
+                <button id="addTaskBtn" class="add-task-btn">+ New Task</button>
+                <div id="taskList" class="task-list"></div>
+            </div>
+            
+            <div class="right-panel" id="taskDetails">
+                <div class="empty-state">
+                    <p>Select a task to view details</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="newTaskModal" class="modal">
+        <div class="modal-content">
+            <h3>New Task</h3>
+            <input type="text" id="newTaskName" placeholder="Task name" />
+
+            <div class="color-picker">
+                <div class="color-option" data-color="#606C38"></div>
+                <div class="color-option" data-color="#283618"></div>
+                <div class="color-option" data-color="#DDA15E"></div>
+                <div class="color-option" data-color="#BC6C25"></div>
+                <div class="color-option" data-color="#7209B7"></div>
+            </div>
+
+            <textarea id="newTaskDescription" placeholder="Task description"></textarea>
+            
+            <div class="modal-buttons">
+                <button id="cancelTask">Cancel</button>
+                <button id="saveTask">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
