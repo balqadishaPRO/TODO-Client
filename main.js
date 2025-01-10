@@ -30,7 +30,7 @@ class TodoApp {
   }
 
   loadTasks() {
-    fetch('https://todo-app-backend-3vg4.onrender.com/api/tasks')
+    fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks`)
       .then(response => response.json())
       .then(data => {
         this.tasks = data;
@@ -54,7 +54,7 @@ class TodoApp {
       completed: false
     };
 
-    fetch('https://todo-app-backend-3vg4.onrender.com/api/tasks', {
+    fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -87,30 +87,6 @@ class TodoApp {
     option.classList.add('selected');
   }
 
-  saveTask() {
-    const name = this.newTaskName.value.trim();
-    const description = this.newTaskDescription.value.trim();
-    const selectedColor = document.querySelector('.color-option.selected');
-
-    if (!name || !selectedColor) {
-      alert('Please fill in the task name and select a color');
-      return;
-    }
-
-    const task = {
-      id: Date.now(),
-      name,
-      description,
-      color: selectedColor.dataset.color,
-      completed: false
-    };
-
-    this.tasks.push(task);
-    this.saveTasks();
-    this.renderTasks();
-    this.closeModal();
-  }
-
   renderTasks() {
     this.taskList.innerHTML = '';
     this.tasks.forEach(task => {
@@ -140,7 +116,7 @@ class TodoApp {
         <div class="description">
           <p>${task.description || 'No description provided'}</p>
         </div>
-        <button onclick="todoApp.toggleTaskStatus(${task.id})">
+        <button onclick="todoApp.toggleTaskStatus('${task.id}')">
           ${task.completed ? 'Mark as Incomplete' : 'Mark as Complete'}
         </button>
       </div>
@@ -149,29 +125,29 @@ class TodoApp {
 
   toggleTaskStatus(taskId) {
     const task = this.tasks.find(t => t.id === taskId);
-    if(task) {
-      const updatedStatus = {completed: !task.completed};
-
-      fetch('https://todo-app-backend-3vg4.onrender.com/api/tasks/${taskId}/status', {
+    if (task) {
+      const updatedStatus = { completed: !task.completed };
+  
+      fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks/${taskId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(updatedStatus)
       })
-      .then(response => response.json())
-      .then(updatedTask => {
+        .then(response => response.json())
+        .then(updatedTask => {
           task.completed = updatedTask.completed;
-          this.saveTasks(); // Optionally save locally if needed
           this.renderTasks();
           this.renderTaskDetails(task);
-      })
-      .catch(error => console.error('Error updating task status:', error));
+        })
+        .catch(error => console.error('Error updating task status:', error));
     }
   }
+  
 
   deleteTask(taskId) {
-    fetch('https://todo-app-backend-3vg4.onrender.com/api/tasks/${taskId}', {
+    fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks/${taskId}`, {
         method: 'DELETE'
     })
     .then(() => {
