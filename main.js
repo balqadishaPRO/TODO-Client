@@ -17,6 +17,9 @@ class TodoApp {
     this.newTaskName = document.getElementById('newTaskName');
     this.newTaskDescription = document.getElementById('newTaskDescription');
     this.colorOptions = document.querySelectorAll('.color-option');
+    this.deleteModal = document.getElementById('deleteConfirmationModal');
+  this.cancelDeleteBtn = document.getElementById('cancelDelete');
+  this.confirmDeleteBtn = document.getElementById('confirmDelete');
   }
 
   attachEventListeners() {
@@ -27,6 +30,8 @@ class TodoApp {
       option.style.backgroundColor = option.dataset.color;
       option.addEventListener('click', () => this.selectColor(option));
     });
+    this.confirmDeleteBtn.addEventListener('click', () => this.confirmDeleteTask());
+    this.cancelDeleteBtn.addEventListener('click', () => this.closeDeleteModal());
   }
 
   loadTasks() {
@@ -96,7 +101,7 @@ class TodoApp {
       }`;
       taskElement.innerHTML = `
         <div class="task-color" style="background-color: ${task.color}"></div>
-        <span class="task-name">${task.name}</span>
+        <span class="task-name">${task.header}</span>
       `;
       taskElement.addEventListener('click', () => this.selectTask(task));
       this.taskList.appendChild(taskElement);
@@ -116,9 +121,14 @@ class TodoApp {
         <div class="description">
           <p>${task.description || 'No description provided'}</p>
         </div>
-        <button onclick="todoApp.toggleTaskStatus('${task.id}')">
-          ${task.completed ? 'Mark as Incomplete' : 'Mark as Complete'}
-        </button>
+        <div class="task-actions">
+          <button onclick="todoApp.toggleTaskStatus('${task.id}')">
+            ${task.completed ? 'Mark as Incomplete' : 'Mark as Complete'}
+          </button>
+          <button onclick="todoApp.deleteTask('${task.id}')">
+            Delete Task
+          </button>
+        </div>
       </div>
     `;
   }
@@ -135,28 +145,60 @@ class TodoApp {
         },
         body: JSON.stringify(updatedStatus)
       })
-        .then(response => response.json())
-        .then(updatedTask => {
-          task.completed = updatedTask.completed;
-          this.renderTasks();
-          this.renderTaskDetails(task);
-        })
-        .catch(error => console.error('Error updating task status:', error));
+      .then(response => response.json())
+      .then(updatedTask => {
+        task.completed = updatedTask.completed;
+        this.renderTasks();
+        this.renderTaskDetails(task);
+      })
+      .catch(error => console.error('Error updating task status:', error));
     }
   }
   
-
   deleteTask(taskId) {
-    fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks/${taskId}`, {
+    this.taskToDelete = taskId;
+    this.openDeleteModal();
+  }
+
+  openDeleteModal() {
+    this.deleteModal.classList.add('active');
+}
+
+closeDeleteModal() {
+  this.deleteModal.classList.remove('active');
+  this.taskToDelete = null;
+}
+
+confirmDeleteTask() {
+  if (!this.taskToDelete) {
+        console.error('No task selected for deletion.');
+        return;
+    }
+
+    fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks/${this.taskToDelete}`, {
         method: 'DELETE'
     })
-    .then(() => {
-        this.tasks = this.tasks.filter(task => task.id !== taskId);
-        this.saveTasks();
-        this.renderTasks();
-    })
-    .catch(error => console.error('Error deleting task:', error));
-  }
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete task');
+            }
+            this.tasks = this.tasks.filter(task => task.id !== this.taskToDelete);
+
+            if (this.selectedTaskId === this.taskToDelete) {
+                this.taskDetails.innerHTML = `<div class="empty-state"><p>Select a task to view details</p></div>`;
+                this.selectedTaskId = null;
+            }
+            this.renderTasks();
+
+            this.taskToDelete = null;
+            this.closeDeleteModal();
+        })
+        .catch(error => {
+            console.error('Error deleting task:', error);
+            alert('Failed to delete the task. Please try again.');
+        });
+}
+
 }
 
 // Initialize the app
