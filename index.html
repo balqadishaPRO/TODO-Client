@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TODO App</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" >
 </head>
 
 <body>
@@ -43,11 +44,11 @@
             <input type="text" id="newTaskName" placeholder="Task name" />
 
             <div class="color-picker">
-                <div class="color-option" data-color="#606C38"></div>
-                <div class="color-option" data-color="#283618"></div>
-                <div class="color-option" data-color="#DDA15E"></div>
-                <div class="color-option" data-color="#BC6C25"></div>
-                <div class="color-option" data-color="#7209B7"></div>
+                <div class="color-option" data-color="#FB8787"></div>
+                <div class="color-option" data-color="#FBE687"></div>
+                <div class="color-option" data-color="#AFFB87"></div>
+                <div class="color-option" data-color="#87FBEF"></div>
+                <div class="color-option" data-color="#8A87FB"></div>
             </div>
 
             <textarea id="newTaskDescription" placeholder="Task description"></textarea>
@@ -58,6 +59,19 @@
             </div>
         </div>
     </div>
+
+    <div id="editTaskModal" class="modal">
+        <div class="modal-content">
+          <h3>Edit Task</h3>
+          <input type="text" id="editTaskHeader" placeholder="Task header" />
+          <textarea id="editTaskDescription" placeholder="Task description"></textarea>
+          <div class="modal-buttons">
+            <button id="cancelEdit">Cancel</button>
+            <button id="saveEdit">Save Changes</button>
+          </div>
+        </div>
+      </div>
+      
     
     <script type="module" src="/main.js"></script>
 </body>

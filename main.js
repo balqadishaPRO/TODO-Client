@@ -18,8 +18,14 @@ class TodoApp {
     this.newTaskDescription = document.getElementById('newTaskDescription');
     this.colorOptions = document.querySelectorAll('.color-option');
     this.deleteModal = document.getElementById('deleteConfirmationModal');
-  this.cancelDeleteBtn = document.getElementById('cancelDelete');
-  this.confirmDeleteBtn = document.getElementById('confirmDelete');
+    this.cancelDeleteBtn = document.getElementById('cancelDelete');
+    this.confirmDeleteBtn = document.getElementById('confirmDelete');
+
+    this.editTaskModal = document.getElementById('editTaskModal');
+    this.editTaskHeader = document.getElementById('editTaskHeader');
+    this.editTaskDescription = document.getElementById('editTaskDescription');
+    this.cancelEditBtn = document.getElementById('cancelEdit');
+    this.saveEditBtn = document.getElementById('saveEdit');
   }
 
   attachEventListeners() {
@@ -30,8 +36,12 @@ class TodoApp {
       option.style.backgroundColor = option.dataset.color;
       option.addEventListener('click', () => this.selectColor(option));
     });
+
     this.confirmDeleteBtn.addEventListener('click', () => this.confirmDeleteTask());
     this.cancelDeleteBtn.addEventListener('click', () => this.closeDeleteModal());
+
+    this.cancelEditBtn.addEventListener('click', () => this.closeEditModal());
+    this.saveEditBtn.addEventListener('click', () => this.saveEditedTask());
   }
 
   loadTasks() {
@@ -45,18 +55,20 @@ class TodoApp {
   }
 
   saveTask() {
-    const name = this.newTaskName.value.trim();
+    const header = this.newTaskName.value.trim();
     const description = this.newTaskDescription.value.trim();
     const selectedColor = document.querySelector('.color-option.selected');
 
-    if(!name || !selectedColor) {
+    if(!header || !selectedColor) {
       alert('Please fill in the task name and select a color');
       return
     }
 
     const task = {
-      description: name,
-      completed: false
+      header,
+      description,
+      completed: false,
+      color: selectedColor.dataset.color
     };
 
     fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks`, {
@@ -117,8 +129,8 @@ class TodoApp {
   renderTaskDetails(task) {
     this.taskDetails.innerHTML = `
       <div class="task-details">
-        <h2 style="border-color: ${task.color}">${task.name}</h2>
-        <div class="description">
+        <h2>${task.header}</h2>
+        <div class="description" style="background-color: ${task.color || '#f9f9f9'}">
           <p>${task.description || 'No description provided'}</p>
         </div>
         <div class="task-actions">
@@ -127,6 +139,9 @@ class TodoApp {
           </button>
           <button onclick="todoApp.deleteTask('${task.id}')">
             Delete Task
+          </button>
+          <button onclick="todoApp.editTask('${task.id}')">
+            Edit Task
           </button>
         </div>
       </div>
@@ -162,12 +177,12 @@ class TodoApp {
 
   openDeleteModal() {
     this.deleteModal.classList.add('active');
-}
+  }
 
-closeDeleteModal() {
-  this.deleteModal.classList.remove('active');
-  this.taskToDelete = null;
-}
+  closeDeleteModal() {
+    this.deleteModal.classList.remove('active');
+    this.taskToDelete = null;
+  }
 
 confirmDeleteTask() {
   if (!this.taskToDelete) {
@@ -197,7 +212,67 @@ confirmDeleteTask() {
             console.error('Error deleting task:', error);
             alert('Failed to delete the task. Please try again.');
         });
-}
+  }
+
+  editTask(taskId) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+        this.editTaskHeader.value = task.header || '';
+        this.editTaskDescription.value = task.description || '';
+        this.currentTaskToEdit = task;
+        this.openEditModal();
+    }
+  }
+
+  openEditModal() {
+    this.editTaskModal.classList.add('active');
+  }
+
+  closeEditModal() {
+    this.editTaskModal.classList.remove('active');
+    this.currentTaskToEdit = null;
+  }
+
+  saveEditedTask() {
+    const updatedHeader = this.editTaskHeader.value.trim();
+    const updatedDescription = this.editTaskDescription.value.trim();
+
+    if (!updatedHeader && !updatedDescription) {
+        alert('Both header and description cannot be empty.');
+        return;
+    }
+
+    const updatedFields = {};
+    if (updatedHeader) updatedFields.header = updatedHeader;
+    if (updatedDescription) updatedFields.description = updatedDescription;
+
+    fetch(`https://todo-app-backend-3vg4.onrender.com/api/tasks/${this.currentTaskToEdit.id}/details`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedFields)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to update task');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const index = this.tasks.findIndex(t => t.id === this.currentTaskToEdit.id);
+        this.tasks[index] = data;
+        this.renderTasks();
+        this.renderTaskDetails(data);
+        this.closeEditModal();
+    })
+    .catch(error => {
+        console.error('Error updating task:', error);
+        alert('Failed to update the task. Please try again.');
+    });
+  }
+
+
 
 }
 
